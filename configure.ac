@@ -271,6 +271,10 @@ GLIB_LC_MESSAGES
 
 dnl ===========================================================================
 
+PKG_CHECK_MODULES(UNITTESTPP, [unittest++])
+AC_SUBST(UNITTESTPP_CFLAGS)
+AC_SUBST(UNITTESTPP_LIBS)
+
 dnl binreloc
 dnl AM_BINRELOC
 AM_CONDITIONAL(WITH_BINRELOC, test "x$br_cv_binreloc" = "xyes")
@@ -530,6 +534,7 @@ src/voikko/Makefile
 src/zemberek/Makefile
 tests/Makefile
 tests/ispell
+unittests/Makefile
 doc/Makefile
 data/Makefile
 ])

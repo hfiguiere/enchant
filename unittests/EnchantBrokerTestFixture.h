@@ -33,7 +33,7 @@
 #include "mock_provider/mock_provider.h"
 #include <stack>
 #include <stdio.h>
-#include <direct.h>
+/* #include <direct.h> */
 
 #if !defined(_WIN32)
 #if !defined(O_BINARY)
@@ -120,7 +120,9 @@ typedef void (*SET_CONFIGURE)(ConfigureHook);
 struct EnchantBrokerTestFixture : EnchantTestFixture
 {
     EnchantBroker* _broker;
+#if _WIN32
     HMODULE hModule, hModule2;
+#endif
 
     //Setup
     EnchantBrokerTestFixture(ConfigureHook userConfiguration=NULL, 
@@ -158,7 +160,9 @@ struct EnchantBrokerTestFixture : EnchantTestFixture
             CopyProvider("libenchant", "libenchant"); //not a provider
         }
 
+#if _WIN32
         SetUserRegistryConfigDir(GetTempUserEnchantDir());
+#endif
         InitializeBroker();
     }
 

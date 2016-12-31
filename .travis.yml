@@ -20,6 +20,7 @@ addons:
       - libhunspell-dev
       - libvoikko-dev
       - aspell-en
+      - libunittest++-dev
       # - zemberek-server: installs with error in Travis’s trusty environment
 
 env: &default_env

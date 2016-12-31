@@ -30,11 +30,17 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <shlwapi.h>
-#endif
 #include <io.h>
+#else
+#include <fcntl.h> /* For creat; should not be needed, but gstdio.h does not include fcntl.h */
+#endif
 #include <assert.h>
 #include <glib.h>
-#include <string>
+#include <glib/gstdio.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
 
 struct EnchantTestFixture
 {
@@ -221,11 +227,11 @@ struct EnchantTestFixture
 
     static void CreateDirectory(const std::string& filepath)
     {
-        g_mkdir_with_parents(filepath.c_str(), S_IREAD | S_IWRITE | S_IEXEC);
+        g_mkdir_with_parents(filepath.c_str(), S_IRUSR | S_IWUSR | S_IXUSR);
     }
     static void CreateFile(const std::string& filepath)
     {
-        int fh = g_creat(filepath.c_str(), _S_IREAD | _S_IWRITE);
+        int fh = g_creat(filepath.c_str(), S_IRUSR | S_IWUSR);
         if(fh != -1) {
             close(fh);
     }
@@ -275,6 +281,7 @@ struct EnchantTestFixture
         return result;
       }
 
+#if defined(_WIN32)
     std::string GetRegistryHomeDir()
     {
         return Convert(GetRegistryValue(HKEY_CURRENT_USER, L"Software\\Enchant\\Config", L"Home_Dir"));
@@ -421,7 +428,7 @@ struct EnchantTestFixture
         RegCloseKey(hkey);
     }
   }
-
+#endif
 
   static std::string AddToPath(const std::string & path, const std::string & fileOrDirName)
     {
