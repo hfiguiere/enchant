@@ -9,9 +9,16 @@ else
 cxx_progs =
 endif
 
-noinst_PROGRAMS = $(cxx_progs)
+check_PROGRAMS = $(cxx_progs)
+TESTS=main
 
-main_SOURCES = main.cpp
+main_SOURCES = main.cpp \
+EnchantBrokerTestFixture.h \
+EnchantDictionaryTestFixture.h \
+EnchantTestFixture.h \
+mock_provider/mock_provider.h \
+$(NULL)
+
 main_LDFLAGS =
 main_DEPENDENCIES = $(DEPS)
 main_LDADD = $(ldadd) $(UNITTESTPP_LIBS)

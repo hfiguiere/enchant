@@ -269,9 +269,39 @@ glib_DEFUN([GLIB_LC_MESSAGES],
 
 GLIB_LC_MESSAGES
 
-dnl ===========================================================================
 
-PKG_CHECK_MODULES(UNITTESTPP, [unittest++])
+dnl ===========================================================================
+dnl Travis run Ubuntu 14.04 LTS which doesn't include that macro
+dnl added to pkg-config in January 2013.
+dnl ===========================================================================
+m4_ifndef([PKG_CHECK_VAR], [
+AC_DEFUN([PKG_CHECK_VAR],
+  [AC_REQUIRE([PKG_PROG_PKG_CONFIG])dnl
+     AC_ARG_VAR([$1], [value of $3 for $2, overriding pkg-config])dnl
+     _PKG_CONFIG([$1], [variable="][$3]["], [$2])
+     AS_VAR_COPY([$1], [pkg_cv_][$1])
+     AS_VAR_IF([$1], [""], [$5], [$4])dnl
+  ])# PKG_CHECK_VAR
+])
+
+dnl ===========================================================================
+dnl very hackish.
+dnl Unbuntu / Debian ship older version of unittest++ with their own pkg-config
+dnl and include
+dnl ===========================================================================
+PKG_CHECK_EXISTS([UnitTest++],
+    [PKG_CHECK_MODULES(UNITTESTPP, [UnitTest++])
+dnl and because of the above, we need to tweak the include until we stop
+dnl supporting this old version.
+        PKG_CHECK_VAR(UNITTESTPP_INCLUDE, [UnitTest++], [includedir])
+        if test "x$UNITTESTPP_INCLUDE" != "x"; then
+            UNITTESTPP_CFLAGS="$UNITTESTPP_CFLAGS -I$UNITTESTPP_INCLUDE/UnitTest++"
+        fi
+    ],
+    [PKG_CHECK_EXISTS([unittest++],
+        [PKG_CHECK_MODULES(UNITTESTPP, [unittest++])]
+    )]
+)
 AC_SUBST(UNITTESTPP_CFLAGS)
 AC_SUBST(UNITTESTPP_LIBS)
 
