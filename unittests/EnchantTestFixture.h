@@ -42,6 +42,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <string>
+
 struct EnchantTestFixture
 {
     std::string savedRegistryHomeDir;
@@ -206,7 +208,7 @@ struct EnchantTestFixture
                     break;
                 }
                 std::string filepath = AddToPath(dir, filename);
-				if(g_file_test(filepath.c_str(), G_FILE_TEST_IS_DIR)){
+                if(g_file_test(filepath.c_str(), G_FILE_TEST_IS_DIR)){
                     DeleteDirAndFiles(filepath);
                 }
                 else {
@@ -234,7 +236,7 @@ struct EnchantTestFixture
         int fh = g_creat(filepath.c_str(), S_IRUSR | S_IWUSR);
         if(fh != -1) {
             close(fh);
-    }
+        }
     }
     static void DeleteFile(const std::string& filepath)
     {

@@ -17,6 +17,18 @@ EnchantBrokerTestFixture.h \
 EnchantDictionaryTestFixture.h \
 EnchantTestFixture.h \
 mock_provider/mock_provider.h \
+dictionary/enchant_dict_add_tests.cpp \
+dictionary/enchant_dict_add_to_session_tests.cpp \
+dictionary/enchant_dict_check_tests.cpp \
+dictionary/enchant_dict_describe_tests.cpp \
+dictionary/enchant_dict_free_string_list_tests.cpp \
+dictionary/enchant_dict_get_error_tests.cpp \
+dictionary/enchant_dict_is_added_tests.cpp \
+dictionary/enchant_dict_is_removed_tests.cpp \
+dictionary/enchant_dict_remove_from_session_tests.cpp \
+dictionary/enchant_dict_remove_tests.cpp \
+dictionary/enchant_dict_store_replacement_tests.cpp \
+dictionary/enchant_dict_suggest_tests.cpp \
 $(NULL)
 
 main_LDFLAGS =

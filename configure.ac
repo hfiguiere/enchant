@@ -1,7 +1,7 @@
 AC_INIT([enchant],[1.6.1])
 AC_PACKAGE_VERSION
 AC_CONFIG_SRCDIR(src/enchant.h)
-AM_INIT_AUTOMAKE([no-define])
+AM_INIT_AUTOMAKE([no-define subdir-objects])
 AC_CANONICAL_HOST
 AM_MAINTAINER_MODE
 AC_CONFIG_MACRO_DIR([m4])
