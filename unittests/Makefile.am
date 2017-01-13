@@ -41,6 +41,11 @@ broker/enchant_broker_request_dict_tests.cpp \
 broker/enchant_broker_request_pwl_dict_tests.cpp \
 broker/enchant_broker_set_ordering_tests.cpp \
 pwl/enchant_pwl_tests.cpp \
+provider/enchant_provider_broker_set_error_tests.cpp \
+provider/enchant_provider_dict_set_error_tests.cpp \
+provider/enchant_provider_get_prefix_dir_tests.cpp \
+provider/enchant_provider_get_user_config_dirs_tests.cpp \
+provider/enchant_provider_get_user_language_tests.cpp \
 $(NULL)
 
 main_LDFLAGS =

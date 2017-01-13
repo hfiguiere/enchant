@@ -451,7 +451,7 @@ struct EnchantTestFixture
 #elif defined(_WIN32)
         return AddToPath(basePath,"enchant");
 #else
-        return AddToPath(basePath,".enchant");
+        return AddToPath(basePath,".config/enchant");
 #endif
     }
 };

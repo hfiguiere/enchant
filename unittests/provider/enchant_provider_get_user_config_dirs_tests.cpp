@@ -19,7 +19,7 @@
  * THE SOFTWARE.
  */
 
-#include "../EnchantTestFixture.h"
+#include "EnchantTestFixture.h"
 #include <UnitTest++.h>
 #include <enchant-provider.h>
 
