@@ -18,12 +18,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
+#include <unistd.h>
 #define NOMINMAX //don't want windows to collide with std::min
 #include <UnitTest++.h>
 #include <enchant.h>
 #include <enchant-provider.h>
 
-#include "../EnchantDictionaryTestFixture.h"
+#include "EnchantDictionaryTestFixture.h"
 
 #include <algorithm>
 
@@ -73,14 +75,14 @@ struct EnchantPwl_TestFixture : EnchantDictionaryTestFixture
 TEST_FIXTURE(EnchantPwl_TestFixture, 
              GetSuggestionsFromWord_MultipleSuggestions_ReturnsOnlyClosest)
 {
-  std::vector<const std::string> sNoiseWords;
+  std::vector<std::string> sNoiseWords;
   sNoiseWords.push_back("spat");
   sNoiseWords.push_back("tots");
   sNoiseWords.push_back("tater");
   sNoiseWords.push_back("ton");
   sNoiseWords.push_back("gnat");
 
-  std::vector<const std::string> sWords;
+  std::vector<std::string> sWords;
   sWords.push_back("cat");
   sWords.push_back("hat");
   sWords.push_back("that");
@@ -90,7 +92,7 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
   AddWordsToDictionary(sWords);
   AddWordsToDictionary(sNoiseWords);
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("tat");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("tat");
   CHECK_EQUAL(sWords.size(), suggestions.size());
   
   std::sort(sWords.begin(), sWords.end());
@@ -102,14 +104,14 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 TEST_FIXTURE(EnchantPwlWithDictSuggs_TestFixture,
              GetSuggestionsFromWord_MultipleSuggestions_ReturnsOnlyAsCloseAsDict)
 {
-  std::vector<const std::string> sNoiseWords;
+  std::vector<std::string> sNoiseWords;
   sNoiseWords.push_back("spat");
   sNoiseWords.push_back("tots");
   sNoiseWords.push_back("tater");
   sNoiseWords.push_back("ton");
   sNoiseWords.push_back("gnat");
 
-  std::vector<const std::string> sWords;
+  std::vector<std::string> sWords;
   sWords.push_back("cat");
   sWords.push_back("hat");
   sWords.push_back("that");
@@ -119,7 +121,7 @@ TEST_FIXTURE(EnchantPwlWithDictSuggs_TestFixture,
   AddWordsToDictionary(sWords);
   AddWordsToDictionary(sNoiseWords);
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("tat");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("tat");
   sWords.push_back("sat");
   CHECK_EQUAL(sWords.size(), suggestions.size());
 
@@ -134,7 +136,9 @@ TEST_FIXTURE(EnchantPwlWithDictSuggs_TestFixture,
 TEST_FIXTURE(EnchantPwl_TestFixture, 
              IsWordInDictionary_DictionaryChangedExternally_Successful)
 {
-  std::vector<const std::string> sWords;
+  UnitTest::TestResults testResults_;
+
+  std::vector<std::string> sWords;
   sWords.push_back("cat");
   sWords.push_back("hat");
   sWords.push_back("that");
@@ -143,11 +147,11 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 
   ExternalAddWordsToDictionary(sWords);
 
-  for(std::vector<const std::string>::const_iterator itWord = sWords.begin(); itWord != sWords.end(); ++itWord){
+  for(std::vector<std::string>::const_iterator itWord = sWords.begin(); itWord != sWords.end(); ++itWord){
     CHECK( IsWordInDictionary(*itWord) );
   }
 
-  std::vector<const std::string> sNewWords;
+  std::vector<std::string> sNewWords;
   sNewWords.push_back("potatoe");
   sNewWords.push_back("grow");
   sNewWords.push_back("another");
@@ -155,7 +159,7 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
   ExternalAddNewLineToDictionary();
   ExternalAddWordsToDictionary(sNewWords);
 
-  for(std::vector<const std::string>::const_iterator itWord = sNewWords.begin(); itWord != sNewWords.end(); ++itWord){
+  for(std::vector<std::string>::const_iterator itWord = sNewWords.begin(); itWord != sNewWords.end(); ++itWord){
     CHECK( IsWordInDictionary(*itWord) );
     if(!IsWordInDictionary(*itWord)){
          testResults_.OnTestFailure(UnitTest::TestDetails(m_details, __LINE__), itWord->c_str());
@@ -166,7 +170,7 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 TEST_FIXTURE(EnchantPwl_TestFixture, 
              Suggest_DictionaryChangedExternally_Successful)
 {
-  std::vector<const std::string> sWords;
+  std::vector<std::string> sWords;
   sWords.push_back("cat");
   sWords.push_back("hat");
   sWords.push_back("that");
@@ -175,7 +179,7 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 
   ExternalAddWordsToDictionary(sWords);
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("tat");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("tat");
 
   CHECK_EQUAL(sWords.size(), suggestions.size());
 
@@ -191,21 +195,21 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 TEST_FIXTURE(EnchantPwl_TestFixture, 
              IsWordInDictionary_DictionaryBeginsWithBOM_Successful)
 {
-	char* Utf8Bom = "\xef\xbb\xbf";
+    const char* Utf8Bom = "\xef\xbb\xbf";
 
-    Sleep(1000); // FAT systems have a 2 second resolution
+    sleep(1); // FAT systems have a 2 second resolution
                  // NTFS is appreciably faster but no specs on what it is exactly
                  // c runtime library's time_t has a 1 second resolution
     FILE * f = g_fopen(GetPersonalDictFileName().c_str(), "at");
 	if(f)
 	{
 		fputs(Utf8Bom, f);
-        fputs("cat", f);
+                fputs("cat", f);
 		fclose(f);
 	}
 
 
-  ReloadTestDictionary();
+    ReloadTestDictionary();
 
     CHECK( IsWordInDictionary("cat") );
 }
@@ -215,24 +219,24 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 TEST_FIXTURE(EnchantPwl_TestFixture, 
              IsWordInDictionary_DictionaryHasInvalidUtf8Data_OnlyReadsValidLines)
 {
-  std::vector<const std::string> sWords;
+  std::vector<std::string> sWords;
   sWords.push_back("cat");
   sWords.push_back("hat");
   sWords.push_back("that");
   sWords.push_back("bat");
   sWords.push_back("tot");
 
-  std::vector<const std::string>::const_iterator bad = sWords.insert(sWords.begin()+2, "\xa5\xf1\x08"); //invalid utf8 data
+  std::vector<std::string>::const_iterator bad = sWords.insert(sWords.begin()+2, "\xa5\xf1\x08"); //invalid utf8 data
   ExternalAddWordsToDictionary(sWords);
 
   ReloadTestDictionary();
 
-  for(std::vector<const std::string>::const_iterator itWord = sWords.begin(); itWord != bad; ++itWord){
+  for(std::vector<std::string>::const_iterator itWord = sWords.begin(); itWord != bad; ++itWord){
     CHECK( IsWordInDictionary(*itWord) );
   }
   CHECK(!IsWordInDictionary(*bad) );
 
-  for(std::vector<const std::string>::const_iterator itWord = bad+1; itWord != sWords.end(); ++itWord){
+  for(std::vector<std::string>::const_iterator itWord = bad+1; itWord != sWords.end(); ++itWord){
     CHECK(IsWordInDictionary(*itWord) );
   }
 }
@@ -242,14 +246,14 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 TEST_FIXTURE(EnchantPwl_TestFixture, 
              IsWordInDictionary_LastWordNotTerminatedByNL_WordsAppendedOkay)
 {
-    std::vector<const std::string> sWords;
+    std::vector<std::string> sWords;
     sWords.push_back("cat");
     sWords.push_back("hat");
     sWords.push_back("that");
     sWords.push_back("bat");
     sWords.push_back("tot");
 
-    Sleep(1000); // FAT systems have a 2 second resolution
+    sleep(1); // FAT systems have a 2 second resolution
                  // NTFS is appreciably faster but no specs on what it is exactly
                  // c runtime library's time_t has a 1 second resolution
     FILE * f = g_fopen(GetPersonalDictFileName().c_str(), "at");
@@ -259,14 +263,14 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 	    fclose(f);
     }
 
-    for(std::vector<const std::string>::const_iterator itWord = sWords.begin() +1;
+    for(std::vector<std::string>::const_iterator itWord = sWords.begin() +1;
         itWord != sWords.end();
         ++itWord)
     {
         AddWordToDictionary(*itWord);
     }
 
-    for(std::vector<const std::string>::const_iterator itWord = sWords.begin(); 
+    for(std::vector<std::string>::const_iterator itWord = sWords.begin(); 
         itWord != sWords.end(); 
         ++itWord){
         CHECK( IsWordInDictionary(*itWord) );
@@ -281,7 +285,7 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 	std::string puaWord("\xF4\x80\x80\x80ord"); // private use character 
 	AddWordToDictionary(puaWord); //edit distance 1 using unichar; 4 using utf8
 
-    std::vector<const std::string> suggestions = GetSuggestionsFromWord("word");
+    std::vector<std::string> suggestions = GetSuggestionsFromWord("word");
 
 	CHECK( !suggestions.empty());
 
@@ -296,10 +300,10 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 TEST_FIXTURE(EnchantPwl_TestFixture, 
              PwlSuggest_EditDistanceOnWordWhichIsPrefixOfAnother)
 {
-  std::vector<const std::string> sNoiseWords;
+  std::vector<std::string> sNoiseWords;
   sNoiseWords.push_back("hastens"); //4
 
-  std::vector<const std::string> sWords;
+  std::vector<std::string> sWords;
   sWords.push_back("cashes"); //3
   sWords.push_back("hasten"); //3
   sWords.push_back("washes"); //3
@@ -307,7 +311,7 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
   AddWordsToDictionary(sWords);
   AddWordsToDictionary(sNoiseWords);
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("saskep");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("saskep");
   CHECK(suggestions[0] != "hasten");
   CHECK_EQUAL(sWords.size(), suggestions.size());
 
@@ -323,25 +327,25 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 TEST_FIXTURE(EnchantPwl_TestFixture, 
              IsWordInDictionary_DictionaryHasCommentedLines_DoesNotReadCommentedLines)
 {
-  std::vector<const std::string> sWords;
+  std::vector<std::string> sWords;
   sWords.push_back("cat");
   sWords.push_back("hat");
   sWords.push_back("that");
   sWords.push_back("bat");
   sWords.push_back("tot");
 
-  std::vector<const std::string>::const_iterator comment = sWords.insert(sWords.begin()+2, "#sat"); //comment
+  std::vector<std::string>::const_iterator comment = sWords.insert(sWords.begin()+2, "#sat"); //comment
   ExternalAddWordsToDictionary(sWords);
   ReloadTestDictionary();
 
-  for(std::vector<const std::string>::const_iterator itWord = sWords.begin(); itWord != comment; ++itWord){
+  for(std::vector<std::string>::const_iterator itWord = sWords.begin(); itWord != comment; ++itWord){
     CHECK( IsWordInDictionary(*itWord) );
   }
 
   CHECK(!IsWordInDictionary(*comment) );
   CHECK(!IsWordInDictionary("sat") );
 
-  for(std::vector<const std::string>::const_iterator itWord = comment+1; itWord != sWords.end(); ++itWord){
+  for(std::vector<std::string>::const_iterator itWord = comment+1; itWord != sWords.end(); ++itWord){
     CHECK(IsWordInDictionary(*itWord) );
   }
 }
@@ -353,18 +357,18 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 {
     const size_t lineLen = 2048;
 
-  std::vector<const std::string> sWords;
+  std::vector<std::string> sWords;
   sWords.push_back("cat");
   sWords.push_back("hat");
   sWords.push_back("that");
   sWords.push_back("bat");
   sWords.push_back("tot");
 
-  std::vector<const std::string>::const_iterator superlong = sWords.insert(sWords.begin()+2, std::string(lineLen, 'c')); //super long line
+  std::vector<std::string>::const_iterator superlong = sWords.insert(sWords.begin()+2, std::string(lineLen, 'c')); //super long line
   ExternalAddWordsToDictionary(sWords);
   ReloadTestDictionary();
 
-  for(std::vector<const std::string>::const_iterator itWord = sWords.begin(); itWord != superlong; ++itWord){
+  for(std::vector<std::string>::const_iterator itWord = sWords.begin(); itWord != superlong; ++itWord){
     CHECK( IsWordInDictionary(*itWord) );
   }
 
@@ -374,7 +378,7 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
       CHECK(!IsWordInDictionary(std::string(i, 'c')) );
   }
 
-  for(std::vector<const std::string>::const_iterator itWord = superlong+1; itWord != sWords.end(); ++itWord){
+  for(std::vector<std::string>::const_iterator itWord = superlong+1; itWord != sWords.end(); ++itWord){
     CHECK(IsWordInDictionary(*itWord) );
   }
 }
@@ -428,9 +432,9 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 
   ReloadTestDictionary();
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("fiance");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("fiance");
 
-  std::vector<const std::string> expected;
+  std::vector<std::string> expected;
   expected.push_back(Convert(L"fianc\xe9")); // u00e9 = Latin small letter e with acute
   CHECK_EQUAL(expected.size(), suggestions.size());
   if(expected.size() == suggestions.size())
@@ -444,9 +448,9 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 {
   AddWordToDictionary(Convert(L"fianc\xe9")); // u00e9 = Latin small letter e with acute
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("fiance");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("fiance");
 
-  std::vector<const std::string> expected;
+  std::vector<std::string> expected;
   expected.push_back(Convert(L"fianc\xe9")); // u00e9 = Latin small letter e with acute
   CHECK_EQUAL(expected.size(), suggestions.size());
   if(expected.size() == suggestions.size())
@@ -462,9 +466,9 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 
   ReloadTestDictionary();
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("fiance");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("fiance");
 
-  std::vector<const std::string> expected;
+  std::vector<std::string> expected;
   expected.push_back(Convert(L"fiance\x301"));  // u0301 = Combining acute accent
   CHECK_EQUAL(expected.size(), suggestions.size());
   if(expected.size() == suggestions.size())
@@ -478,9 +482,9 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 {
   AddWordToDictionary(Convert(L"fiance\x301")); // u0301 = Combining acute accent
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("fiance");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("fiance");
 
-  std::vector<const std::string> expected;
+  std::vector<std::string> expected;
   expected.push_back(Convert(L"fiance\x301")); // u0301 = Combining acute accent
   CHECK_EQUAL(expected.size(), suggestions.size());
   if(expected.size() == suggestions.size())
@@ -606,9 +610,9 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 {
   AddWordToDictionary("CIA");
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("CEA");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("CEA");
 
-  std::vector<const std::string> expected;
+  std::vector<std::string> expected;
   expected.push_back("CIA");
   CHECK_EQUAL(expected.size(), suggestions.size());
   if(expected.size() == suggestions.size())
@@ -622,9 +626,9 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 {
   AddWordToDictionary("CIA");
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("Cea");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("Cea");
 
-  std::vector<const std::string> expected;
+  std::vector<std::string> expected;
   expected.push_back("CIA");
   CHECK_EQUAL(expected.size(), suggestions.size());
   if(expected.size() == suggestions.size())
@@ -638,9 +642,9 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 {
   AddWordToDictionary("CIA");
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("cea");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("cea");
 
-  std::vector<const std::string> expected;
+  std::vector<std::string> expected;
   expected.push_back("CIA");
   CHECK_EQUAL(expected.size(), suggestions.size());
   if(expected.size() == suggestions.size())
@@ -654,9 +658,9 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 {
   AddWordToDictionary("Eric");
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("RIC");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("RIC");
 
-  std::vector<const std::string> expected;
+  std::vector<std::string> expected;
   expected.push_back("ERIC");
   CHECK_EQUAL(expected.size(), suggestions.size());
   CHECK_ARRAY_EQUAL(expected, suggestions, expected.size());
@@ -667,9 +671,9 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 {
   AddWordToDictionary("Eric");
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("Ric");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("Ric");
 
-  std::vector<const std::string> expected;
+  std::vector<std::string> expected;
   expected.push_back("Eric");
   CHECK_EQUAL(expected.size(), suggestions.size());
   CHECK_ARRAY_EQUAL(expected, suggestions, expected.size());
@@ -680,9 +684,9 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 {
   AddWordToDictionary("Eric");
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("ric");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("ric");
 
-  std::vector<const std::string> expected;
+  std::vector<std::string> expected;
   expected.push_back("Eric");
   CHECK_EQUAL(expected.size(), suggestions.size());
   CHECK_ARRAY_EQUAL(expected, suggestions, expected.size());
@@ -693,9 +697,9 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 {
   AddWordToDictionary("rice");
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("RIC");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("RIC");
 
-  std::vector<const std::string> expected;
+  std::vector<std::string> expected;
   expected.push_back("RICE");
   CHECK_EQUAL(expected.size(), suggestions.size());
   CHECK_ARRAY_EQUAL(expected, suggestions, expected.size());
@@ -706,9 +710,9 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 {
   AddWordToDictionary("rice");
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("Ric");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("Ric");
 
-  std::vector<const std::string> expected;
+  std::vector<std::string> expected;
   expected.push_back("Rice");
   CHECK_EQUAL(expected.size(), suggestions.size());
   CHECK_ARRAY_EQUAL(expected, suggestions, expected.size());
@@ -719,9 +723,9 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 {
   AddWordToDictionary("rice");
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("ric");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("ric");
 
-  std::vector<const std::string> expected;
+  std::vector<std::string> expected;
   expected.push_back("rice");
   CHECK_EQUAL(expected.size(), suggestions.size());
   CHECK_ARRAY_EQUAL(expected, suggestions, expected.size());
@@ -737,9 +741,9 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 {
   AddWordToDictionary(Convert(L"\x01f1IE"));  // u01f1 is Latin captial letter Dz
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("RIE");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("RIE");
 
-  std::vector<const std::string> expected;
+  std::vector<std::string> expected;
   expected.push_back(Convert(L"\x01f1IE")); // u01f1 is Latin captial letter Dz
   CHECK_EQUAL(expected.size(), suggestions.size());
   if(expected.size() == suggestions.size())
@@ -753,9 +757,9 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 {
   AddWordToDictionary(Convert(L"\x01f1IE"));  // u01f1 is Latin captial letter Dz
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("Rie");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("Rie");
 
-  std::vector<const std::string> expected;
+  std::vector<std::string> expected;
   expected.push_back(Convert(L"\x01f1IE")); // u01f1 is Latin captial letter Dz
   CHECK_EQUAL(expected.size(), suggestions.size());
   if(expected.size() == suggestions.size())
@@ -769,9 +773,9 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 {
   AddWordToDictionary(Convert(L"\x01f1IE"));  // u01f1 is Latin captial letter Dz
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("rie");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("rie");
 
-  std::vector<const std::string> expected;
+  std::vector<std::string> expected;
   expected.push_back(Convert(L"\x01f1IE")); // u01f1 is Latin captial letter Dz
   CHECK_EQUAL(expected.size(), suggestions.size());
   if(expected.size() == suggestions.size())
@@ -785,9 +789,9 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 {
   AddWordToDictionary(Convert(L"\x01f2ie"));  // u01f2 is Latin capital letter d with small letter z
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("RIE");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("RIE");
 
-  std::vector<const std::string> expected;
+  std::vector<std::string> expected;
   expected.push_back(Convert(L"\x01f1IE")); // u01f1 is Latin captial letter Dz
   CHECK_EQUAL(expected.size(), suggestions.size());
   if(expected.size() == suggestions.size())
@@ -801,9 +805,9 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 {
   AddWordToDictionary(Convert(L"\x01f2ie"));  // u01f2 is Latin capital letter d with small letter z
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("Rie");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("Rie");
 
-  std::vector<const std::string> expected;
+  std::vector<std::string> expected;
   expected.push_back(Convert(L"\x01f2ie")); // u01f2 is Latin capital letter d with small letter z
   CHECK_EQUAL(expected.size(), suggestions.size());
   if(expected.size() == suggestions.size())
@@ -817,9 +821,9 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 {
   AddWordToDictionary(Convert(L"\x01f2ie"));  // u01f2 is Latin capital letter d with small letter z
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("rie");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("rie");
 
-  std::vector<const std::string> expected;
+  std::vector<std::string> expected;
   expected.push_back(Convert(L"\x01f2ie")); // u01f2 is Latin capital letter d with small letter z
   CHECK_EQUAL(expected.size(), suggestions.size());
   if(expected.size() == suggestions.size())
@@ -833,9 +837,9 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 {
   AddWordToDictionary(Convert(L"\x01f3ie"));  // u01f3 is Latin small letter dz
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("RIE");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("RIE");
 
-  std::vector<const std::string> expected;
+  std::vector<std::string> expected;
   expected.push_back(Convert(L"\x01f1IE")); // u01f1 is Latin captial letter Dz
   CHECK_EQUAL(expected.size(), suggestions.size());
   if(expected.size() == suggestions.size())
@@ -849,9 +853,9 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 {
   AddWordToDictionary(Convert(L"\x01f3ie"));  // u01f3 is Latin small letter dz
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("Rie");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("Rie");
 
-  std::vector<const std::string> expected;
+  std::vector<std::string> expected;
   expected.push_back(Convert(L"\x01f2ie")); // u01f2 is Latin capital letter d with small letter z
   CHECK_EQUAL(expected.size(), suggestions.size());
   if(expected.size() == suggestions.size())
@@ -865,9 +869,9 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 {
   AddWordToDictionary(Convert(L"\x01f3ie"));  // u01f3 is Latin small letter dz
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("rie");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("rie");
 
-  std::vector<const std::string> expected;
+  std::vector<std::string> expected;
   expected.push_back(Convert(L"\x01f3ie")); // u01f3 is Latin small letter dz
   CHECK_EQUAL(expected.size(), suggestions.size());
   if(expected.size() == suggestions.size())
@@ -883,9 +887,9 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
   AddWordToDictionary("CIAL");
   AddWordToDictionary("CIALAND");
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("ceal");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("ceal");
 
-  std::vector<const std::string> expected;
+  std::vector<std::string> expected;
   expected.push_back("CIAL");
   CHECK_EQUAL(expected.size(), suggestions.size());
   if(expected.size() == suggestions.size())
@@ -900,9 +904,9 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
   AddWordToDictionary("Eric");
   AddWordToDictionary("Ericson");
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("eruc");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("eruc");
 
-  std::vector<const std::string> expected;
+  std::vector<std::string> expected;
   expected.push_back("Eric");
   CHECK_EQUAL(expected.size(), suggestions.size());
   if(expected.size() == suggestions.size())
@@ -1084,26 +1088,26 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 TEST_FIXTURE(EnchantPwl_TestFixture, 
              PwlRemove_ItemRemovedFromFile)
 {
-  std::vector<const std::string> sWords;
+  std::vector<std::string> sWords;
   sWords.push_back("cat");
   sWords.push_back("hat");
   sWords.push_back("that");
   sWords.push_back("bat");
   sWords.push_back("tot");
 
-  std::vector<const std::string>::const_iterator removed = sWords.insert(sWords.begin()+2, "hello");
+  std::vector<std::string>::const_iterator removed = sWords.insert(sWords.begin()+2, "hello");
   AddWordsToDictionary(sWords);
 
   RemoveWordFromDictionary("hello");
 
   ReloadTestDictionary(); // to see what actually persisted
 
-  for(std::vector<const std::string>::const_iterator itWord = sWords.begin(); itWord != removed; ++itWord){
+  for(std::vector<std::string>::const_iterator itWord = sWords.begin(); itWord != removed; ++itWord){
     CHECK( IsWordInDictionary(*itWord) );
   }
   CHECK(!IsWordInDictionary(*removed) );
 
-  for(std::vector<const std::string>::const_iterator itWord = removed+1; itWord != sWords.end(); ++itWord){
+  for(std::vector<std::string>::const_iterator itWord = removed+1; itWord != sWords.end(); ++itWord){
     CHECK(IsWordInDictionary(*itWord) );
   }
 }
@@ -1111,14 +1115,14 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 TEST_FIXTURE(EnchantPwl_TestFixture, 
              PwlRemove_ItemRemovedFromBeginningOfFile)
 {
-  std::vector<const std::string> sWords;
+  std::vector<std::string> sWords;
   sWords.push_back("cat");
   sWords.push_back("hat");
   sWords.push_back("that");
   sWords.push_back("bat");
   sWords.push_back("tot");
 
-  std::vector<const std::string>::const_iterator removed = sWords.insert(sWords.begin(), "hello");
+  std::vector<std::string>::const_iterator removed = sWords.insert(sWords.begin(), "hello");
   AddWordsToDictionary(sWords);
 
   RemoveWordFromDictionary("hello");
@@ -1127,7 +1131,7 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 
   CHECK(!IsWordInDictionary(*removed) );
 
-  for(std::vector<const std::string>::const_iterator itWord = removed+1; itWord != sWords.end(); ++itWord){
+  for(std::vector<std::string>::const_iterator itWord = removed+1; itWord != sWords.end(); ++itWord){
     CHECK(IsWordInDictionary(*itWord) );
   }
 }
@@ -1135,32 +1139,29 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 TEST_FIXTURE(EnchantPwl_TestFixture, 
              PwlRemove_ItemRemovedFromBeginningOfFileWithBOM)
 {
-  char* Utf8Bom = "\xef\xbb\xbf";
+  const char* Utf8Bom = "\xef\xbb\xbf";
 
-  std::vector<const std::string> sWords;
+  std::vector<std::string> sWords;
   sWords.push_back("hello");
   sWords.push_back("cat");
   sWords.push_back("hat");
 
-  Sleep(1000); // FAT systems have a 2 second resolution
+  sleep(1); // FAT systems have a 2 second resolution
                // NTFS is appreciably faster but no specs on what it is exactly
                // c runtime library's time_t has a 1 second resolution
   FILE * f = g_fopen(GetPersonalDictFileName().c_str(), "at");
-  if(f)
-	{
-		fputs(Utf8Bom, f);
-		for(std::vector<const std::string>::const_iterator 
-			itWord = sWords.begin();
-            itWord != sWords.end();
-            ++itWord)
-        {
-            if(itWord != sWords.begin()){
-			    fputc('\n', f);
-            }
-			fputs(itWord->c_str(), f);
-		}
-		fclose(f);
-	}
+  if(f) {
+    fputs(Utf8Bom, f);
+    for(std::vector<std::string>::const_iterator itWord = sWords.begin();
+        itWord != sWords.end(); ++itWord)
+    {
+      if(itWord != sWords.begin()){
+        fputc('\n', f);
+      }
+      fputs(itWord->c_str(), f);
+    }
+    fclose(f);
+  }
 
   RemoveWordFromDictionary("hello");
 
@@ -1168,7 +1169,7 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 
   CHECK(!IsWordInDictionary("hello") );
 
-  for(std::vector<const std::string>::const_iterator itWord = sWords.begin()+1; itWord != sWords.end(); ++itWord){
+  for(std::vector<std::string>::const_iterator itWord = sWords.begin()+1; itWord != sWords.end(); ++itWord){
     CHECK(IsWordInDictionary(*itWord) );
   }
 }
@@ -1176,21 +1177,21 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 TEST_FIXTURE(EnchantPwl_TestFixture, 
              PwlRemove_ItemRemovedFromEndOfFile)
 {
-  std::vector<const std::string> sWords;
+  std::vector<std::string> sWords;
   sWords.push_back("cat");
   sWords.push_back("hat");
   sWords.push_back("that");
   sWords.push_back("bat");
   sWords.push_back("tot");
 
-  std::vector<const std::string>::const_iterator removed = sWords.insert(sWords.end(), "hello");
+  std::vector<std::string>::const_iterator removed = sWords.insert(sWords.end(), "hello");
   AddWordsToDictionary(sWords);
 
   RemoveWordFromDictionary("hello");
 
   ReloadTestDictionary(); // to see what actually persisted
 
-  for(std::vector<const std::string>::const_iterator itWord = sWords.begin(); itWord != removed; ++itWord){
+  for(std::vector<std::string>::const_iterator itWord = sWords.begin(); itWord != removed; ++itWord){
     CHECK( IsWordInDictionary(*itWord) );
   }
   CHECK(!IsWordInDictionary(*removed) );
@@ -1199,21 +1200,21 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 TEST_FIXTURE(EnchantPwl_TestFixture, 
              PwlRemove_ItemRemovedFromEndOfFile_ExternalSetup)
 {
-  std::vector<const std::string> sWords;
+  std::vector<std::string> sWords;
   sWords.push_back("cat");
   sWords.push_back("hat");
   sWords.push_back("that");
   sWords.push_back("bat");
   sWords.push_back("tot");
 
-  std::vector<const std::string>::const_iterator removed = sWords.insert(sWords.end(), "hello");
+  std::vector<std::string>::const_iterator removed = sWords.insert(sWords.end(), "hello");
   ExternalAddWordsToDictionary(sWords);
 
   RemoveWordFromDictionary("hello");
 
   ReloadTestDictionary(); // to see what actually persisted
 
-  for(std::vector<const std::string>::const_iterator itWord = sWords.begin(); itWord != removed; ++itWord){
+  for(std::vector<std::string>::const_iterator itWord = sWords.begin(); itWord != removed; ++itWord){
     CHECK( IsWordInDictionary(*itWord) );
   }
   CHECK(!IsWordInDictionary(*removed) );
@@ -1222,7 +1223,7 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 TEST_FIXTURE(EnchantPwl_TestFixture, 
              PwlRemove_FileHasProperSubset_ItemRemovedFromFile)
 {
-  std::vector<const std::string> sWords;
+  std::vector<std::string> sWords;
   sWords.push_back("cat");
   sWords.push_back("hat");
   sWords.push_back("that");
@@ -1230,13 +1231,13 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
   sWords.push_back("tot");
   sWords.push_back("anteater");
 
-  std::vector<const std::string>::const_iterator removed = sWords.insert(sWords.end(), "ant");
+  std::vector<std::string>::const_iterator removed = sWords.insert(sWords.end(), "ant");
   AddWordsToDictionary(sWords);
   RemoveWordFromDictionary("ant");
 
   ReloadTestDictionary(); // to see what actually persisted
 
-  for(std::vector<const std::string>::const_iterator itWord = sWords.begin(); itWord != removed; ++itWord){
+  for(std::vector<std::string>::const_iterator itWord = sWords.begin(); itWord != removed; ++itWord){
     CHECK( IsWordInDictionary(*itWord) );
   }
   CHECK(!IsWordInDictionary(*removed) );
@@ -1247,14 +1248,14 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 TEST_FIXTURE(EnchantPwl_TestFixture, 
              PwlSuggest_HasProperSubset_SubstituteFirstChar)
 {
-  std::vector<const std::string> sWords;
+  std::vector<std::string> sWords;
   sWords.push_back("cat");  //1
 
   AddWordsToDictionary(sWords);
 
   AddWordToDictionary("catsup"); //4
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("tat");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("tat");
 
   CHECK_EQUAL(sWords.size(), suggestions.size());
 
@@ -1267,14 +1268,14 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 TEST_FIXTURE(EnchantPwl_TestFixture, 
              PwlSuggest_HasProperSubset_SubstituteFirstChar_Insert1)
 {
-  std::vector<const std::string> sWords;
+  std::vector<std::string> sWords;
   sWords.push_back("cats"); //2
 
   AddWordsToDictionary(sWords);
 
   AddWordToDictionary("catsup"); //4
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("tat");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("tat");
 
   CHECK_EQUAL(sWords.size(), suggestions.size());
 
@@ -1287,14 +1288,14 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 TEST_FIXTURE(EnchantPwl_TestFixture, 
              PwlSuggest_HasProperSubset_SubstituteFirstChar_Insert2)
 {
-  std::vector<const std::string> sWords;
+  std::vector<std::string> sWords;
   sWords.push_back("catch"); //3
 
   AddWordsToDictionary(sWords);
 
   AddWordToDictionary("catchy"); //4
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("tat");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("tat");
 
   CHECK_EQUAL(sWords.size(), suggestions.size());
 
@@ -1307,14 +1308,14 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 TEST_FIXTURE(EnchantPwl_TestFixture, 
              PwlSuggest_HasProperSubset_Insert1)
 {
-  std::vector<const std::string> sWords;
+  std::vector<std::string> sWords;
   sWords.push_back("tad");  //1
 
   AddWordsToDictionary(sWords);
 
   AddWordToDictionary("taddle"); //4
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("ta");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("ta");
 
   CHECK_EQUAL(sWords.size(), suggestions.size());
 
@@ -1327,14 +1328,14 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 TEST_FIXTURE(EnchantPwl_TestFixture, 
              PwlSuggest_HasProperSubset_Insert2)
 {
-  std::vector<const std::string> sWords;
+  std::vector<std::string> sWords;
   sWords.push_back("tote"); //2
 
   AddWordsToDictionary(sWords);
 
   AddWordToDictionary("totems"); //4
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("to");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("to");
 
   CHECK_EQUAL(sWords.size(), suggestions.size());
 
@@ -1346,14 +1347,14 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 TEST_FIXTURE(EnchantPwl_TestFixture, 
              PwlSuggest_HasProperSubset_Insert3)
 {
-  std::vector<const std::string> sWords;
+  std::vector<std::string> sWords;
   sWords.push_back("catch"); //3
 
   AddWordsToDictionary(sWords);
 
   AddWordToDictionary("catchy"); //4
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("ca");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("ca");
 
   CHECK_EQUAL(sWords.size(), suggestions.size());
 
@@ -1365,14 +1366,14 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 TEST_FIXTURE(EnchantPwl_TestFixture, 
              PwlSuggest_HasProperSubset_Delete1)
 {
-  std::vector<const std::string> sWords;
+  std::vector<std::string> sWords;
   sWords.push_back("tape");  //1
 
   AddWordsToDictionary(sWords);
 
   AddWordToDictionary("tapestry"); //4
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("tapen");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("tapen");
 
   CHECK_EQUAL(sWords.size(), suggestions.size());
 
@@ -1385,14 +1386,14 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 TEST_FIXTURE(EnchantPwl_TestFixture, 
              PwlSuggest_HasProperSubset_Delete2)
 {
-  std::vector<const std::string> sWords;
+  std::vector<std::string> sWords;
   sWords.push_back("tot"); //2
 
   AddWordsToDictionary(sWords);
 
   AddWordToDictionary("totality"); //4
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("totil");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("totil");
 
   CHECK_EQUAL(sWords.size(), suggestions.size());
 
@@ -1404,14 +1405,14 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 TEST_FIXTURE(EnchantPwl_TestFixture, 
              PwlSuggest_HasProperSubset_Delete3)
 {
-  std::vector<const std::string> sWords;
+  std::vector<std::string> sWords;
   sWords.push_back("cat"); //3
 
   AddWordsToDictionary(sWords);
 
   AddWordToDictionary("catcher"); //4
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("catsip");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("catsip");
 
   CHECK_EQUAL(sWords.size(), suggestions.size());
 
@@ -1424,14 +1425,14 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 TEST_FIXTURE(EnchantPwl_TestFixture, 
              PwlSuggest_HasProperSubset_Substitute1)
 {
-  std::vector<const std::string> sWords;
+  std::vector<std::string> sWords;
   sWords.push_back("small");  //1
 
   AddWordsToDictionary(sWords);
 
   AddWordToDictionary("smallest"); //4
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("skall");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("skall");
 
   CHECK_EQUAL(sWords.size(), suggestions.size());
 
@@ -1444,14 +1445,14 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 TEST_FIXTURE(EnchantPwl_TestFixture, 
              PwlSuggest_HasProperSubset_Substitute2)
 {
-  std::vector<const std::string> sWords;
+  std::vector<std::string> sWords;
   sWords.push_back("catch"); //2
 
   AddWordsToDictionary(sWords);
 
   AddWordToDictionary("catcher"); //4
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("cafdh");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("cafdh");
 
   CHECK_EQUAL(sWords.size(), suggestions.size());
 
@@ -1464,14 +1465,14 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 TEST_FIXTURE(EnchantPwl_TestFixture, 
              PwlSuggest_HasProperSubset_Substitute3)
 {
-  std::vector<const std::string> sWords;
+  std::vector<std::string> sWords;
   sWords.push_back("hasten"); //3
 
   AddWordsToDictionary(sWords);
 
   AddWordToDictionary("hastens"); //4
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("hasopo");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("hasopo");
 
   CHECK_EQUAL(sWords.size(), suggestions.size());
 
@@ -1484,14 +1485,14 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 TEST_FIXTURE(EnchantPwl_TestFixture, 
              PwlSuggest_HasProperSubset_Transpose1)
 {
-  std::vector<const std::string> sWords;
+  std::vector<std::string> sWords;
   sWords.push_back("small");  //1
 
   AddWordsToDictionary(sWords);
 
   AddWordToDictionary("smallest"); //4
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("smlal");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("smlal");
 
   CHECK_EQUAL(sWords.size(), suggestions.size());
 
@@ -1504,14 +1505,14 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 TEST_FIXTURE(EnchantPwl_TestFixture, 
              PwlSuggest_HasProperSubset_Transpose2)
 {
-  std::vector<const std::string> sWords;
+  std::vector<std::string> sWords;
   sWords.push_back("catch"); //2
 
   AddWordsToDictionary(sWords);
 
   AddWordToDictionary("catcher"); //4
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("acthc");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("acthc");
 
   CHECK_EQUAL(sWords.size(), suggestions.size());
 
@@ -1524,14 +1525,14 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 TEST_FIXTURE(EnchantPwl_TestFixture, 
              PwlSuggest_HasProperSubset_Transpose3)
 {
-  std::vector<const std::string> sWords;
+  std::vector<std::string> sWords;
   sWords.push_back("hasten"); //3
 
   AddWordsToDictionary(sWords);
 
   AddWordToDictionary("hastens"); //4
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("ahtsne");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("ahtsne");
 
   CHECK_EQUAL(sWords.size(), suggestions.size());
 
@@ -1544,12 +1545,12 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 TEST_FIXTURE(EnchantPwl_TestFixture, 
              PwlSuggest_Transpose1Insert2)
 {
-  std::vector<const std::string> sWords;
+  std::vector<std::string> sWords;
   sWords.push_back("catch"); //3
 
   AddWordsToDictionary(sWords);
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("act");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("act");
 
   CHECK_EQUAL(sWords.size(), suggestions.size());
 
@@ -1562,12 +1563,12 @@ TEST_FIXTURE(EnchantPwl_TestFixture,
 TEST_FIXTURE(EnchantPwl_TestFixture, 
              PwlSuggest_Transpose2)
 {
-  std::vector<const std::string> sWords;
+  std::vector<std::string> sWords;
   sWords.push_back("catch"); //2
 
   AddWordsToDictionary(sWords);
 
-  std::vector<const std::string> suggestions = GetSuggestionsFromWord("acthc");
+  std::vector<std::string> suggestions = GetSuggestionsFromWord("acthc");
 
   CHECK_EQUAL(sWords.size(), suggestions.size());
 
