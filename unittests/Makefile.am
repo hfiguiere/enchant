@@ -29,6 +29,17 @@ dictionary/enchant_dict_remove_from_session_tests.cpp \
 dictionary/enchant_dict_remove_tests.cpp \
 dictionary/enchant_dict_store_replacement_tests.cpp \
 dictionary/enchant_dict_suggest_tests.cpp \
+broker/enchant_broker_describe_tests.cpp \
+broker/enchant_broker_dict_exists_tests.cpp \
+broker/enchant_broker_dict_exists_tests.i \
+broker/enchant_broker_free_dict_tests.cpp \
+broker/enchant_broker_free_tests.cpp \
+broker/enchant_broker_get_error_tests.cpp \
+broker/enchant_broker_init_tests.cpp \
+broker/enchant_broker_list_dicts_tests.cpp \
+broker/enchant_broker_request_dict_tests.cpp \
+broker/enchant_broker_request_pwl_dict_tests.cpp \
+broker/enchant_broker_set_ordering_tests.cpp \
 $(NULL)
 
 main_LDFLAGS =
